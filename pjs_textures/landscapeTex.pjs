@@ -1,0 +1,61 @@
+
+int x_step;
+int x_width;
+int bar_height;
+int width = 128;
+int height = 128;
+
+void setup() {
+    size(128, 128);
+    frameRate(24);
+}
+
+void draw() {	
+	if (!audio.vu || !audio.vu.vu_levels || !audio.signal) {
+        return;
+    }	
+
+    background(clearClr[0]*30, clearClr[1]*30, clearClr[2]*30, 255); 
+
+    noStroke();
+		        
+	fill(clearClr[0]*80, clearClr[1]*80, clearClr[2]*80,255);
+		
+    if ( audio.bd.beat_counter % 4 == 0 ) {
+      rect(0, 0, 64, 64);
+    } else if ( audio.bd.beat_counter % 4 == 1 ) {
+      rect(0, 64, 64, 64);
+    } else if ( audio.bd.beat_counter % 4 == 2 ) {
+      rect(64, 64, 64, 64);
+    } else if ( audio.bd.beat_counter % 4 == 3 ) {
+      rect(64, 0, 64, 64);
+    }
+		
+    strokeWeight(0.0);
+
+	if (audio.vu.vu_levels.length)
+	{
+		int x_step = (width/(audio.bd.config.BD_DETECTION_RANGES/2));
+		int x_width = (width/(audio.bd.config.BD_DETECTION_RANGES/2))-2;
+
+		for (int i = 0; i < audio.bd.config.BD_DETECTION_RANGES/2; i++)
+		{
+				int v_i = Math.abs((i-32))%32;
+
+				fill(4.0*audio.vu.vu_levels[v_i]*clearClr[0]*255,4.0*audio.vu.vu_levels[v_i]*clearClr[1]*255,4.0*audio.vu.vu_levels[v_i]*clearClr[2]*255,255);
+				
+				int x = 128.0/8.0 * (i%8) + 128.0/16.0;
+				int y = 128.0/8.0 * Math.floor(i/8) + 128.0/16.0;
+				
+				int sz;
+				sz = 15*audio.vu.vu_levels[v_i];
+				sz += 6;
+				if (sz>15) sz = 15;
+				
+				ellipse(x,y,sz,sz);
+		}
+	}
+
+
+}
+
