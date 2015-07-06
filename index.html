@@ -76,46 +76,34 @@
             function loadedMetadata() {
                 audio.element = document.getElementById('audio1');
 
-                if (!window.webkitAudioContext) {
-                    audio.channels = audio.element.mozChannels;
-                    audio.rate = audio.element.mozSampleRate;
-                    audio.bufferSize = audio.element.mozFrameBufferLength / audio.channels;
-                    audio.signal = new Float32Array(audio.bufferSize);
+                  if (audioSource) {
+                    audioSource.disconnect();
+                    audioData.disconnect();
+                  }
+                  
+                  audio.bufferSize = 1024;
+                  audio.channels = 1;
 
-                    audio.fft = new FFT(audio.bufferSize, audio.rate);
+                  if (!audioContext) audioContext = new AudioContext();
+                  
+                  audio.rate = audioContext.sampleRate;
+                  audioData = audioContext.createScriptProcessor(audio.bufferSize, 2, 1);
 
-                    audio.element.addEventListener("MozAudioAvailable", audioWritten, false);
-                } else {
-                
-                    if (audioSource) {
-                      audioSource.disconnect();
-                      audioData.disconnect();
-                    }
-                    
-                    audio.bufferSize = 1024;
-                    audio.channels = 1;
+                  audioData.onaudioprocess = doAudio;
+                  // refuses to let me have 0 outputs?
 
-                    if (!audioContext) audioContext = new webkitAudioContext();
-                    
-                    audio.rate = audioContext.sampleRate;
-                    audioData = audioContext.createJavaScriptNode(audio.bufferSize, 2, 1);
+                  
+                  audioSource = audioContext.createMediaElementSource(audio.element);
+                 
 
-                    audioData.onaudioprocess = doWebkitAudio;
-                    // refuses to let me have 0 outputs?
+                  audioSource.connect(audioData);
+                  audioData.connect(audioContext.destination);
+                  audioSource.connect(audioContext.destination);
 
-                    
-                    audioSource = audioContext.createMediaElementSource(audio.element);
-                   
-
-                    audioSource.connect(audioData);
-                    audioData.connect(audioContext.destination);
-                    audioSource.connect(audioContext.destination);
-
-                    audio.fft = new FFT(audio.bufferSize, audio.rate);
-                }
+                  audio.fft = new FFT(audio.bufferSize, audio.rate);
             }
 
-            function doWebkitAudio(event) {
+            function doAudio(event) {
                 if (!audio.fft || audio.element.paused) {
                     return;
                 }
@@ -131,7 +119,7 @@
                 }
 
                 audio.fft.forward(audio.signal);
-                audio.bd.process(event.timeStamp / 1000, audio.fft.spectrum);
+                audio.bd.process(audioContext.currentTime, audio.fft.spectrum);
 
                 if (audio.bd.win_bpm_int_lo) {
                     m_BeatTimer += audio.bd.last_update;
@@ -526,20 +514,16 @@
             }
 
             function buildViz(file) {
-                if (!!window.webkitAudioContext) {
-                    audio.element.pause();
-                    document.body.removeChild(audio.element);
-                    audio.element = document.createElement("audio");
-                    audio.element.id = "audio1";
-                    audio.element.controls=true;
-                    audio.element.className="audioElem";
-                    document.body.appendChild(audio.element);            
-                }
+                audio.element.pause();
+                document.body.removeChild(audio.element);
+                audio.element = document.createElement("audio");
+                audio.element.id = "audio1";
+                audio.element.controls=true;
+                audio.element.className="audioElem";
+                document.body.appendChild(audio.element);            
             
                 audio.element.addEventListener('canplay', function () {
-                    if (!!window.webkitAudioContext) {
-                        loadedMetadata();
-                    }
+                    loadedMetadata();
                     this.play();
                 }, false);
 

@@ -8,7 +8,7 @@ Thanks to Corban Brook [@corban](http://twitter.com/corban) for the FFT implemen
 
 ### Notes ###
 
-Should work with Mozilla Audio Data API and the WebKit Audio API; requires WebGL and a decent graphics card.
+Requires browser with Web Audio API and WebGL support plus a decent graphics card.
 
 Drag + Drop and OGG or MP3 file to change the music.  Music with BPM of 100-150 recommended for best detection.
  
